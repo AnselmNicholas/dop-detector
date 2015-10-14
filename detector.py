@@ -135,7 +135,8 @@ def displayGadget(dfile,output="a.png",min_instr = 0,min_mem_in = 0,count=False,
 			gadget.draw(output,"png","dot")
 			print "Press enter to load next gadget"
 			raw_input()
-		
+	g.clear()
+	g.close()
 	g = None
 	return numGadget,gadgets
 
@@ -144,4 +145,4 @@ if __name__ == "__main__":
 		sys.exit("a.py <dotfile>")
 
 	dfile = sys.argv[1]
-	displayGadget(dfile)
+	displayGadget(dfile,inspect=True)
