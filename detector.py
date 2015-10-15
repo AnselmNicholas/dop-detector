@@ -281,10 +281,10 @@ def displayGadget(dfile, output="b.png", min_instr=0, min_mem_in=0, count=False,
 
 		# #filtering
 
-		min_instr = int("8048000",16)
-		max_instr = int("805c86b",16)
+		min_addr = int("8048000",16)
+		max_addr = int("805c86b",16)
 
-		if not any((min_instr <= instr_addr and instr_addr <= max_instr) for instr_addr in getAddrs(gadget)):
+		if not any((min_addr <= instr_addr and instr_addr <= max_addr) for instr_addr in getAddrs(gadget)):
 			continue
 
 		RegInFilter = ["R_ESP_0_pre"]
