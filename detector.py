@@ -26,6 +26,21 @@ def getPattern(g):
 			# print g.draw("err.png","png","dot")
 			raise Exception("Unable to find pattern for ")
 
+def getAddrs(g):
+	insns = fetchInstruction(g)
+	ret = []
+	for insn in insns:
+		# [xxxx] 0x1234: movl xyz xyu
+		try:
+			insn = insn.split(" ", 3)
+			ret.append(int(insn[1],16))
+		except:
+			print insns
+			print g
+			# print g.draw("err.png","png","dot")
+			raise Exception("Unable to find pattern for ")
+
+
 	return tuple(ret)
 class GadgetType:
 	Movement, Calculation, Setter, Unknown = range(4)
@@ -265,6 +280,13 @@ def displayGadget(dfile, output="b.png", min_instr=0, min_mem_in=0, count=False,
 			# if forkHasNoMemLoad >0 : continue
 
 		# #filtering
+
+		min_instr = int("8048000",16)
+		max_instr = int("805c86b",16)
+
+		if not any((min_instr <= instr_addr and instr_addr <= max_instr) for instr_addr in getAddrs(gadget)):
+			continue
+
 		RegInFilter = ["R_ESP_0_pre"]
 		if len(rootinsn) == 1 and rootinsn[0][0] in RegInFilter:
 			continue
