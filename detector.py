@@ -310,7 +310,7 @@ def displayGadget(dfile, output="b.png", min_instr=0, min_mem_in=0, count=False,
 			continue
 
 		instructions = fetchInstruction(gadget)
-		insnException = ["calll"]
+		insnException = ["calll","%ebp","%esp","%eip"]
 		if any(keyword in instruction for keyword in insnException for instruction in instructions):
 			continue
 
