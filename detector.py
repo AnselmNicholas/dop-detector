@@ -41,7 +41,7 @@ def getAddrs(g):
 			# print g.draw("err.png","png","dot")
 			raise Exception("Unable to find addr for ")
 	return tuple(ret)
-	
+
 class GadgetType:
 	Movement, Calculation, Setter, Unknown = range(4)
 class GadgetClass:
@@ -56,9 +56,16 @@ def classifier(gadget):
 	if pattern == ('movl',):
 		return (GadgetType.Setter, GadgetClass.Constant)
 
+	if pattern == ('movb',):
+		return (GadgetType.Setter, GadgetClass.Constant)
+
 	# basic adder addl xxx (eax) -> mem
-	if pattern == ('addl',):
+	if pattern in [('addl',), ('subl',)]:
 		return (GadgetType.Calculation, GadgetClass.Constant)
+
+	# mov 0x1234 eax -> eax -> movl eax, (ebx) -> mem
+	if pattern == ('movl','mov'):
+		return (GadgetType.Setter, GadgetClass.Constant)
 
 	# detect basic movement mem -> insn -> reg -> insn -> mem
 	if pattern == ('movl', 'movl'):
@@ -67,7 +74,8 @@ def classifier(gadget):
 	# basic adder  mem -> movl -> reg -> add xxx reg -> reg -> movl -> mem
 	if pattern in [
 		('movl', 'add', 'movl'),
-		(u'movl', u'and', u'movl')
+		(u'movl', u'and', u'movl'),
+		('movl','imull'),(u'movl', u'addl')
 										]:
 		return (GadgetType.Calculation, GadgetClass.Basic)
 
