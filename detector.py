@@ -33,7 +33,7 @@ def getAddrs(g):
 		# [xxxx] 0x1234: movl xyz xyu
 		try:
 			insn = insn.split(" ", 3)
-			ret.append(int(insn[1],16))
+			ret.append(int(insn[1][2:-1],16))
 		except:
 			print insns
 			print g
