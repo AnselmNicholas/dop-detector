@@ -25,6 +25,7 @@ def getPattern(g):
 			print g
 			# print g.draw("err.png","png","dot")
 			raise Exception("Unable to find pattern for ")
+	return tuple(ret)
 
 def getAddrs(g):
 	insns = fetchInstruction(g)
@@ -38,10 +39,9 @@ def getAddrs(g):
 			print insns
 			print g
 			# print g.draw("err.png","png","dot")
-			raise Exception("Unable to find pattern for ")
-
-
+			raise Exception("Unable to find addr for ")
 	return tuple(ret)
+	
 class GadgetType:
 	Movement, Calculation, Setter, Unknown = range(4)
 class GadgetClass:
@@ -331,6 +331,20 @@ def displayGadget(dfile, output="b.png", min_instr=0, min_mem_in=0, count=False,
 
 		if inspect:
 			# if gclass == (GadgetType.Unknown,GadgetClass.Unknown):
+			print "insn"
+			print instructions
+			print 			
+			print "pattern"
+			print getPattern(gadget)
+			print 
+			print "addrs"
+			print getAddrs(gadget)
+			print 
+			print "rootinsn"
+			print rootinsn
+			print 
+			print "leafinsn"
+			print leafinsn
 			gadget.draw(output, "png", "dot")
 			print "Press enter to load next gadget"
 			raw_input()
