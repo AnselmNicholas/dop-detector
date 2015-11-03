@@ -83,7 +83,6 @@ def classifier(gadget):
 	if pattern in [
 		(u'addl', u'subl') ,
 		(u'adcl', u'sbbl')
-										]:
 		return (GadgetType.Calculation, GadgetClass.NonBasic)
 
 	if pattern == ('movl', 'cmovz', 'mov'):
@@ -287,13 +286,17 @@ def displayGadget(dfile, output="b.png", min_instr=0, min_mem_in=0, count=False,
 
 			# if forkHasNoMemLoad >0 : continue
 
-		# #filtering
+		# #filtering of address
 
-		min_addr = int("8048000",16)
-		max_addr = int("805c86b",16)
+		# min_addr = int("8048000",16)
+		# max_addr = int("808a4ff",16) #wuf
+		# max_addr = int("805c86b",16) #sudo
+		# max_addr = int("804e93b",16) #ghttpd
+		# max_addr = int("80511f3",16) #orzhttpd
+		
 
-		if not any((min_addr <= instr_addr and instr_addr <= max_addr) for instr_addr in getAddrs(gadget)):
-			continue
+		# if not any((min_addr <= instr_addr and instr_addr <= max_addr) for instr_addr in getAddrs(gadget)):
+		# 	continue
 
 		RegInFilter = ["R_ESP_0_pre"]
 		if len(rootinsn) == 1 and rootinsn[0][0] in RegInFilter:

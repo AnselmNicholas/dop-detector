@@ -16,6 +16,14 @@ class GadgetDB:
 		self.gadgetStore = {}
 		self.gadgetCount = 0
 
+	def getId(self,gadgetPattern):
+		item = self.gadgetStore.get(gadgetPattern,None)
+
+		if item is None:
+			return -1
+		else:
+			return item["id"]
+
 	def add(self,gadgetPattern,classification):
 		item = self.gadgetStore.get(gadgetPattern,None)
 		if item is not None:
@@ -41,7 +49,7 @@ class GadgetDB:
 				v["pattern"] = k
 				writer.writerow(v)
 
-def process(flowfile, db, inspect=False,):
+def process(flowfile, db,printInsn = True, insnFP=None, inspect=False,):
 	# print flowfile
 	global cnt
 	global seenPattern
@@ -114,6 +122,9 @@ def process(flowfile, db, inspect=False,):
 				#print pat
 				#print "Press enter to load next gadget"
 				#raw_input()
+			if printInsn:
+				gid = gdb.getId(pat)
+				insnFP.write("{0} {1}\n".format(gid,fetchInstruction(gadget)))
 
 
 		if inspect and numGadget:
@@ -199,19 +210,25 @@ if __name__ == '__main__':
 	dfolder = sys.argv[1]
 	q = []
 	gdb = GadgetDB()
+
+
+	dstFolder = os.path.join(dfolder,"analysis")
+	if not os.path.exists(dstFolder):
+		os.makedirs(dstFolder)
+	insnFP = open(os.path.join(dfolder,"analysis","insn.txt"),"w")
 	for i in os.listdir(dfolder):
 		if i.startswith("flow"):
 			# print i
 			flowfile = os.path.join(dfolder, i)
 			try:
-				totalNumGadgets += process(flowfile,  gdb,inspect=False)
+				totalNumGadgets += process(flowfile,  gdb,printInsn = True,insnFP=insnFP,inspect=False)
 			except Exception, e:
 				print "errerr", i
 				print e
 				import traceback
 				traceback.print_exc()
 
-
+	insnFP.close()
 	gdb.export(os.path.join(dfolder,"analysis"))
 			# q.append(flowfile)
 
