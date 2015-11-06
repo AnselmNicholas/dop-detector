@@ -1,6 +1,6 @@
 import pygraphviz as pgv
 import sys
-
+from classify import classifier,GadgetClass,GadgetType
 # dfile = "small_flows/flow51005"
 
 
@@ -41,81 +41,6 @@ def getAddrs(g):
 			# print g.draw("err.png","png","dot")
 			raise Exception("Unable to find addr for ")
 	return tuple(ret)
-
-class GadgetType:
-	Movement, Calculation, Setter, Unknown = range(4)
-class GadgetClass:
-	Basic, NonBasic, Constant, Conditional , Unclassified, Unknown = range(6)
-
-def classifier(gadget):
-
-	pattern = getPattern(gadget)
-	instructions = fetchInstruction(gadget)
-
-	# basic setter detect movl xxx (eax) -> mem
-	if pattern == ('movl',):
-		return (GadgetType.Setter, GadgetClass.Constant)
-
-	if pattern == ('movb',):
-		return (GadgetType.Setter, GadgetClass.Constant)
-
-	# basic adder addl xxx (eax) -> mem
-	if pattern in [('addl',), ('subl',)]:
-		return (GadgetType.Calculation, GadgetClass.Constant)
-
-	# mov 0x1234 eax -> eax -> movl eax, (ebx) -> mem
-	if pattern == ('movl','mov'):
-		return (GadgetType.Setter, GadgetClass.Constant)
-
-	# detect basic movement mem -> insn -> reg -> insn -> mem
-	if pattern == ('movl', 'movl'):
-		return (GadgetType.Movement, GadgetClass.Basic)
-
-	# basic adder  mem -> movl -> reg -> add xxx reg -> reg -> movl -> mem
-	if pattern in [
-		('movl', 'add', 'movl'),
-		(u'movl', u'and', u'movl'),
-		('movl','imull'),(u'movl', u'addl')
-										]:
-		return (GadgetType.Calculation, GadgetClass.Basic)
-
-	# mem -> subl -> reg -> addl -> mem
-	if pattern in [
-		(u'addl', u'subl') ,
-		(u'adcl', u'sbbl')
-		return (GadgetType.Calculation, GadgetClass.NonBasic)
-
-	if pattern == ('movl', 'cmovz', 'mov'):
-		return (GadgetType.Movement, GadgetClass.Conditional)
-
-	if pattern == (u'movl', u'xor'):
-		return (GadgetType.Setter, GadgetClass.Constant)
-
-	# unclassified = [
-	# 	(u'movl', u'cmovz'),
-	# 	(u'movl', u'or', u'movzx', u'or', u'setz', u'setz', u'add', u'setz'),
-	# 	(u'movl', u'lea', u'add', u'movl'),
-	# 	(u'movw', u'movzxw'),
-	# 	(u'movl', u'sub', u'xor'),
-	# 	(u'movsbb',),
-	# 	(u'movsww',),
-	# 	(u'andb',),
-	# 	(u'movl', u'lea'),
-	# 	(u'movl', u'mov', u'mov', u'xor'),
-	# 	(u'movl', u'and', u'lea', u'sub', u'and', u'lea', u'lea', u'movl', u'sub'),
-	# 	(u'movl', u'lea', u'and', u'lea', u'sub', u'and', u'lea', u'lea', u'movl', u'sub'),
-	# 	(u'movl', u'add', u'and', u'lea', u'sub', u'and', u'lea', u'lea', u'movl', u'sub', u'xor'),
-	# 	(u'movl', u'rdtsc'), (u'movl', u'setz'), (u'movl', u'mov', u'xor'),(u'movl', u'cmovnz'),(u'movb', u'or', u'and', u'movzxb', u'and', u'movzxb'),
-	# 	(u'movb', u'or', u'and', u'movzxb'),
-	# 	(u'movl', u'cmovnz', u'movzx', u'and', u'movzxb'),(u'movl', u'cmovz', u'mov')
-
-
-	# ]
-
-	# if pattern in unclassified:
-	# 	return (GadgetType.Movement,GadgetClass.Unclassified)
-
-	return (GadgetType.Unknown, GadgetClass.Unknown)
 
 def displayGadget(dfile, output="b.png", min_instr=0, min_mem_in=0, count=False, inspect=False):
 	g = pgv.AGraph(dfile)
@@ -288,15 +213,15 @@ def displayGadget(dfile, output="b.png", min_instr=0, min_mem_in=0, count=False,
 
 		# #filtering of address
 
-		# min_addr = int("8048000",16)
-		# max_addr = int("808a4ff",16) #wuf
+		min_addr = int("8048000",16)
+		max_addr = int("808a4ff",16) #wuf
 		# max_addr = int("805c86b",16) #sudo
 		# max_addr = int("804e93b",16) #ghttpd
 		# max_addr = int("80511f3",16) #orzhttpd
 		
 
-		# if not any((min_addr <= instr_addr and instr_addr <= max_addr) for instr_addr in getAddrs(gadget)):
-		# 	continue
+		if not any((min_addr <= instr_addr and instr_addr <= max_addr) for instr_addr in getAddrs(gadget)):
+			continue
 
 		RegInFilter = ["R_ESP_0_pre"]
 		if len(rootinsn) == 1 and rootinsn[0][0] in RegInFilter:
@@ -313,7 +238,8 @@ def displayGadget(dfile, output="b.png", min_instr=0, min_mem_in=0, count=False,
 			continue
 
 		instructions = fetchInstruction(gadget)
-		insnException = ["calll","%ebp","%esp","%eip"]
+		#insnException = ["calll","%ebp","%esp","%eip"]
+		insnException = ["calll","%eip"]
 		if any(keyword in instruction for keyword in insnException for instruction in instructions):
 			continue
 
@@ -337,7 +263,7 @@ def displayGadget(dfile, output="b.png", min_instr=0, min_mem_in=0, count=False,
 				print "min_mem_in", min_mem_in
 
 		numGadget += 1
-		gclass = classifier(gadget)
+		gclass = classifier(getPattern(gadget))
 		gadgets.append([gadget, gclass, rootinsn, leafinsn])
 
 		if inspect:

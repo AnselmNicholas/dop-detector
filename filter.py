@@ -3,7 +3,8 @@ import sys, os, shutil
 import multiprocessing
 import itertools
 
-from detector import displayGadget, GadgetType, GadgetClass, fetchInstruction, getPattern
+from detector import displayGadget, fetchInstruction, getPattern
+from classify import GadgetClass,GadgetType
 
 seenPattern = {}
 cnt = 0
